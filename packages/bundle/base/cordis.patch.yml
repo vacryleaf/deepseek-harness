@@ -446,6 +446,10 @@
     # The native DeepSeek adapter. No key or endpoint is inlined: both resolve per
     # request from the `llm-deepseek:` settings section over this entry, with the
     # key coming from the credential store below. Thinking defaults are a deployment
-    # choice.
+    # choice. Shipped profiles keep retrying provider failures with bounded backoff
+    # until success, cancellation, or disposal; a later patch can select `normal`.
     - id: llm-deepseek
       name: '@deepseek-ai/dsh-llm-deepseek'
+      config:
+        retryPolicy:
+          mode: always
