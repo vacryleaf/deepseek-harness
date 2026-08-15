@@ -136,6 +136,19 @@ describe('request-level dynamic profiles', () => {
     expect(server.headers[1]?.authorization).toBe('Bearer pk-two')
   })
 
+  it('inherits the composition retry policy for settings-born routes', async () => {
+    const dir = await home()
+    const ctx = await boot(dir, { defaultRetryPolicy: { mode: 'always' } })
+
+    await ctx.settings.update(NS, { providers: { openai: {} } })
+    expect(ctx.llm.providerRetryPolicy('openai')).toMatchObject({ mode: 'always' })
+
+    await ctx.settings.update(NS, {
+      providers: { openai: { retryPolicy: { mode: 'normal', maxRetries: 1 } } },
+    })
+    expect(ctx.llm.providerRetryPolicy('openai')).toMatchObject({ mode: 'normal', maxRetries: 1 })
+  })
+
   it('re-registers routes in place when a captured retry policy changes', async () => {
     const dir = await home()
     const ctx = await boot(dir, { providers: { openai: {} } })

@@ -91,9 +91,13 @@
     # through their apiKeyEnv references, and drop again when the section empties.
     # Supplying those profiles is exactly what the web Models page does. Which
     # adapters exist is composition; which providers run is the user's settings
-    # document.
+    # document. Provider profiles that omit a policy inherit the shipped
+    # unbounded policy; an explicit profile policy remains an override.
     - id: llm-pi-ai
       name: '@deepseek-ai/dsh-llm-pi-ai'
+      config:
+        defaultRetryPolicy:
+          mode: always
 
     - id: session-persistence-jsonl
       name: '@deepseek-ai/dsh-session-persistence-jsonl'

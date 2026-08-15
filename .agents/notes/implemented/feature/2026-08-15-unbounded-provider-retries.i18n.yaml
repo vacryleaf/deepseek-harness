@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-15-unbounded-provider-retries.md
-2026-08-15-unbounded-provider-retries.md: 4574aa27daf72a7921bab208bd7ccbc1a2956381
-2026-08-15-unbounded-provider-retries.zh.md: aa1dabadfea0f0ec9ddfae0f9a29f1936363a694
+2026-08-15-unbounded-provider-retries.md: bfbd204bd988457ec6966ee00d141a9b7bc0d018
+2026-08-15-unbounded-provider-retries.zh.md: f235072f88c886ed0bde9917e20a9e7f62906424

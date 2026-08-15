@@ -168,8 +168,13 @@ export interface ResolvedPiAiProviderProfile
   configuredMaxTokens: ReadonlyMap<string, number>
 }
 
-/** Plugin configuration: the provider routes this instance owns. */
+/** Plugin configuration: the provider routes and inherited policy this instance owns. */
 export interface Config {
+  /**
+   * Retry policy inherited by profiles that omit their own policy. A composition
+   * can set this without changing the standalone resolver default.
+   */
+  defaultRetryPolicy?: RetryPolicyConfig
   /**
    * pi-ai provider routes, keyed by provider. An empty (or omitted) dict is
    * the dormant settings-driven posture: the adapter mounts with no routes
@@ -253,6 +258,7 @@ const profile = z.object({
 
 /** Runtime schema for {@link Config}. */
 export const Config: z<Config> = z.object({
+  defaultRetryPolicy: RetryPolicySchema,
   providers: z.dict(profile).default({}),
 })
 
@@ -296,16 +302,21 @@ function rejectRemovedFields(provider: string, source: PiAiProviderProfile): voi
  * resolves to the empty (dormant) route set here rather than through a hidden
  * fallback, and each route's models and pi-ai provider are materialized once.
  * @param providers - configured provider profiles keyed by route.
+ * @param defaultRetryPolicy - policy inherited by profiles that omit one.
  * @returns validated profiles in configuration order.
  */
 export function resolveProfiles(
   providers: Readonly<Record<string, PiAiProviderProfile>> | undefined,
+  defaultRetryPolicy?: RetryPolicyConfig,
 ): Map<string, ResolvedPiAiProviderProfile> {
   if (Array.isArray(providers)) {
     throw new Error('llm-pi-ai: providers is now a dict keyed by provider route, not an array of profiles')
   }
   const entries = Object.entries(providers ?? {})
   const resolved = new Map<string, ResolvedPiAiProviderProfile>()
+  const inheritedRetryPolicy = defaultRetryPolicy === undefined
+    ? undefined
+    : resolveRetryPolicy(defaultRetryPolicy, 'llm-pi-ai: defaultRetryPolicy')
   for (const [provider, source] of entries) {
     rejectRemovedFields(provider, source)
     if (provider.length === 0) throw new Error('llm-pi-ai: provider names must be non-empty')
@@ -354,7 +365,9 @@ export function resolveProfiles(
       displayName,
       ...apiKeyEnv === undefined ? {} : { apiKeyEnv: credentialRef(apiKeyEnv) },
       streamIdleTimeoutMs,
-      retryPolicy: resolveRetryPolicy(retryPolicy, `llm-pi-ai: provider "${provider}" retryPolicy`),
+      retryPolicy: retryPolicy === undefined
+        ? inheritedRetryPolicy ?? resolveRetryPolicy(undefined, `llm-pi-ai: provider "${provider}" retryPolicy`)
+        : resolveRetryPolicy(retryPolicy, `llm-pi-ai: provider "${provider}" retryPolicy`),
       ...rest.headers === undefined ? {} : { headers: { ...rest.headers } },
       ...rest.thinkingBudgets === undefined ? {} : { thinkingBudgets: { ...rest.thinkingBudgets } },
       configuredMaxTokens: catalog.configuredMaxTokens,
