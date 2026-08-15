@@ -257,6 +257,26 @@ describe('live event path', () => {
     return { api, session }
   }
 
+  it('forwards completed root turns to the Android bridge', async () => {
+    const onTaskCompleted = vi.fn()
+    vi.stubGlobal('window', { DshAndroidBridge: { onTaskCompleted } })
+    const { session } = await opened([])
+
+    session.handleMuxEnvelope('native' as never, {
+      type: 'session/event',
+      sessionId: SID,
+      event: ev.turnEnd(0, 1),
+    })
+    session.handleMuxEnvelope('native-aborted' as never, {
+      type: 'session/event',
+      sessionId: SID,
+      event: ev.turnEnd(1, 2, 'aborted'),
+    })
+
+    expect(onTaskCompleted).toHaveBeenCalledOnce()
+    expect(onTaskCompleted).toHaveBeenCalledWith(JSON.stringify({ sessionId: SID, turn: 1, seq: 0 }))
+  })
+
   it('drops replayed frames at or below the window tail', async () => {
     const { session } = await opened()
     const before = session.getSnapshot()

@@ -1,0 +1,11 @@
+{
+  "name": "@deepseek-ai/dsh-android",
+  "description": "Android WebView remote client for a DSH server",
+  "version": "0.1.0-rc.5",
+  "private": true,
+  "scripts": {
+    "android:build": "gradlew.bat :app:assembleDebug",
+    "android:lint": "gradlew.bat :app:lintDebug",
+    "android:test": "gradlew.bat :app:testDebugUnitTest"
+  }
+}

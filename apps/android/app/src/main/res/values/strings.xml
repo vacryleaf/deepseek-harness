@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DSH 远程端</string>
+    <string name="setup_title">连接远程 DSH</string>
+    <string name="setup_description">输入并保存多个 DSH Web 地址。启动 App 时会自动打开上次使用的服务。</string>
+    <string name="service_url_hint">https://example.com</string>
+    <string name="saved_services">已保存服务</string>
+    <string name="use_service">连接</string>
+    <string name="delete_service">删除</string>
+    <string name="save_and_connect">保存并连接</string>
+    <string name="change_service">更换服务</string>
+    <string name="remote_service">远程 DSH · %1$s</string>
+    <string name="remote_service_short">远程 DSH</string>
+    <string name="invalid_url">请输入带主机名的 HTTP(S) 地址。</string>
+    <string name="https_required">正式版只允许 HTTPS 地址。调试版可临时使用 HTTP 连接局域网服务。</string>
+    <string name="url_must_be_origin">地址只能包含协议、主机和可选端口，不能包含路径、查询参数或用户名密码。</string>
+    <string name="connection_failed">无法连接到远程 DSH，请检查地址、网络和服务端 HTTPS 配置。</string>
+    <string name="http_error">远程 DSH 返回 HTTP %1$d。</string>
+    <string name="tls_error">远程服务的 TLS 证书无效，连接已取消。</string>
+    <string name="external_link_failed">无法打开外部链接。</string>
+    <string name="file_picker_failed">无法打开文件选择器。</string>
+    <string name="setup_hint_debug">调试版允许 HTTP；发布版要求 HTTPS。认证由远程服务或其前置代理提供。</string>
+    <string name="setup_hint_release">发布版要求 HTTPS。认证由远程服务或其前置代理提供。</string>
+    <string name="task_notification_channel">任务完成</string>
+    <string name="task_notification_channel_description">DSH 远程任务完成通知</string>
+    <string name="task_completed_title">DSH 任务完成</string>
+    <string name="task_completed_message">远程服务 %1$s 的第 %2$d 轮任务已完成。</string>
+    <string name="keep_alive_notification_channel">后台连接</string>
+    <string name="keep_alive_notification_channel_description">保持 DSH WebView 连接以接收任务完成通知</string>
+    <string name="keep_alive_notification_title">DSH 后台连接</string>
+    <string name="keep_alive_notification_message">正在保持远程服务连接，以便接收任务完成通知。</string>
+</resources>

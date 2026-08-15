@@ -78,6 +78,10 @@ reason 为 `max-tokens` 的 `turn/end` 会在该轮位置投影出一个 `turn-m
 
 每个常驻 `Session` 都拥有一个 `modelSelection` 快照，其中包含当前模型选择、按提供方分组的目录、逐提供方失败记录，以及 `idle`／`loading`／`ready`／`selecting`／`error` 状态。历史记录会建立或刷新当前模型选择，打开选择器会刷新目录；选择失败会保留上一次模型选择和可用分组。目录与选择操作共用单调递增的代次，因此较旧响应无法覆盖较新的模型选择。重连重建会恢复 Host 报告的模型选择，同时不替换未变化的选择子结构。
 
+## 原生完成通知
+
+当可选的 Android WebView bridge 存在时，实时根会话中 `reason.kind: 'completed'` 的 `turn/end` 事件会调用 `window.DshAndroidBridge.onTaskCompleted`。JSON 载荷包含 `sessionId`、`turn` 和 `seq`；bridge 缺失或调用失败会被忽略，普通浏览器会话和事件投递不会受到影响。该回调只观察实时事件，不回放历史记录。Android 原生前台服务会独立监听现有 Host HTTP 和 WebSocket 事件路径；bridge 是 WebView 备用通道，不是 Android 通知的唯一通道。
+
 ## 模型体验
 
 无，因为会话对象层会选择后续 Host 请求使用的提供方／模型路由，但不添加任何模型可见内容。

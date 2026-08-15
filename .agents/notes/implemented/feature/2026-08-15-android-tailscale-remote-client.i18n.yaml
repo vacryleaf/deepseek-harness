@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-15-android-tailscale-remote-client.md
+2026-08-15-android-tailscale-remote-client.md: 623d91e03eeb5c03f96e88e50bcccfc86188bf31
+2026-08-15-android-tailscale-remote-client.zh.md: 00abe1a95187eec5a68c57f56d7cabdcff8b108a
