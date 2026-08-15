@@ -47,6 +47,7 @@ function liveAgent(ctx: Context, session: Session): Agent {
     },
     cancel() {},
     runMaintenance: task => task(new AbortController().signal),
+    resumeInterruptedTurn() {},
     whenIdle() { return Promise.resolve() },
   }
   ctx.agents.register(agent)

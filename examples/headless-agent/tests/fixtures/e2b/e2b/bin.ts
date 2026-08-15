@@ -29,6 +29,7 @@ const owner: Agent = {
   inject() {},
   cancel() {},
   runMaintenance: task => task(new AbortController().signal),
+  resumeInterruptedTurn: () => {},
   whenIdle: () => Promise.resolve(),
 }
 const unregisterOwner = ctx.agents.register(owner)

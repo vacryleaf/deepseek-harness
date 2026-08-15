@@ -320,7 +320,7 @@ describe('dsh web keyless CLI smoke', () => {
           return
         }
         mainAttempts++
-        if (mainAttempts === 1) {
+        if (mainAttempts <= 3) {
           response.write('data: {"choices":[{"delta":{"content":"WEB_RETRY_DISCARDED"}}]}\n\n')
           setTimeout(() => { response.destroy() }, 20)
           return
@@ -367,14 +367,16 @@ describe('dsh web keyless CLI smoke', () => {
       }, { timeout: 20_000 }).toBe(true)
       if (page === undefined) throw new Error('retry history was not observed')
       const retry = page.events.find(({ event }) => event.type === 'llm/retry')?.event
-      expect(mainAttempts).toBe(2)
+      expect(mainAttempts).toBe(4)
+      expect(page.events.filter(({ event }) => event.type === 'llm/retry')).toHaveLength(3)
       expect(retry?.data).toMatchObject({
         turn: 1,
         step: 1,
+        mode: 'always',
         retry: 1,
-        maxRetries: 2,
         failure: { code: 'TRANSPORT' },
       })
+      expect(retry?.data).not.toHaveProperty('maxRetries')
       expect(JSON.stringify(page.events)).toContain('WEB_RETRY_DISCARDED')
     } finally {
       const closed = child.exitCode === null
@@ -461,6 +463,108 @@ describe('dsh web keyless CLI smoke', () => {
       if (child.exitCode === null) child.kill('SIGTERM')
       await closed
       await new Promise<void>(resolveClose => provider.close(() => { resolveClose() }))
+      rmSync(workspace, { recursive: true, force: true })
+    }
+  })
+
+  it('restarts the Web process and resumes an interrupted model turn', async () => {
+    requireDist()
+    const workspace = mkdtempSync(join(tmpdir(), 'dsh-web-restart-recovery-'))
+    let firstRequestResolve!: () => void
+    let secondResponseResolve!: () => void
+    const firstRequest = new Promise<void>((resolve) => { firstRequestResolve = resolve })
+    const secondResponse = new Promise<void>((resolve) => { secondResponseResolve = resolve })
+    let requestCount = 0
+    const provider = createServer((request, response) => {
+      let body = ''
+      request.setEncoding('utf8')
+      request.on('data', (chunk: string) => { body += chunk })
+      request.on('end', () => {
+        requestCount += 1
+        if (requestCount === 1) {
+          firstRequestResolve()
+          return
+        }
+        secondResponseResolve()
+        response.writeHead(200, { 'content-type': 'text/event-stream' })
+        response.end([
+          'data: {"choices":[{"delta":{"role":"assistant","content":null,"reasoning_content":""}}]}',
+          'data: {"choices":[{"delta":{"content":"WEB_RESTART_RECOVERED"}}]}',
+          'data: {"choices":[{"delta":{"content":""},"finish_reason":"stop"}],"usage":{"prompt_tokens":3,"completion_tokens":1}}',
+          'data: [DONE]',
+          '',
+        ].join('\n\n'))
+      })
+    })
+    await new Promise<void>(resolve => provider.listen(0, '127.0.0.1', resolve))
+    const address = provider.address()
+    if (address === null || typeof address === 'string') throw new Error('mock provider did not bind a TCP port')
+    const tsxLoader = pathToFileURL(createRequire(join(REPO_ROOT, 'package.json')).resolve('tsx')).href
+    const launch = (): ChildProcess => spawn(
+      process.execPath,
+      ['--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web', '--port', '0'],
+      {
+        cwd: workspace,
+        env: {
+          ...process.env,
+          DEEPSEEK_API_KEY: 'keyless-web-restart-recovery',
+          DEEPSEEK_BASE_URL: `http://127.0.0.1:${address.port}`,
+          DSH_HOME: join(workspace, '.dsh'),
+          DSH_AGENTS_HOME: join(workspace, '.agents'),
+          TSX_TSCONFIG_PATH: join(REPO_ROOT, 'tsconfig.json'),
+        },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    )
+    const stop = async (child: ChildProcess, signal: NodeJS.Signals): Promise<void> => {
+      if (child.exitCode !== null) return
+      const closed = new Promise<void>(resolve => child.once('close', () => { resolve() }))
+      child.kill(signal)
+      await Promise.race([closed, new Promise(resolve => setTimeout(resolve, 10_000).unref())])
+      if (child.exitCode === null) {
+        child.kill('SIGKILL')
+        await closed
+      }
+    }
+    let child: ChildProcess | undefined
+    try {
+      child = launch()
+      const firstBaseUrl = await waitForReadyLine(child)
+      const created = await rpc<{ sessionId: string }>(firstBaseUrl, 'session.create', {})
+      await rpc<{ accepted: true }>(firstBaseUrl, 'session.prompt', {
+        sessionId: created.sessionId,
+        mode: 'queue',
+        content: [{ type: 'text', text: 'finish the recovery test' }],
+      })
+      await Promise.race([
+        firstRequest,
+        new Promise<never>((_resolve, reject) => {
+          setTimeout(() => { reject(new Error('initial provider request not received')) }, 15_000).unref()
+        }),
+      ])
+      await stop(child, 'SIGKILL')
+      child = undefined
+
+      child = launch()
+      const secondBaseUrl = await waitForReadyLine(child)
+      await Promise.race([
+        secondResponse,
+        new Promise<never>((_resolve, reject) => {
+          setTimeout(() => { reject(new Error('startup recovery provider request not received')) }, 30_000).unref()
+        }),
+      ])
+      await waitForAssistantMarker(secondBaseUrl, created.sessionId, 'WEB_RESTART_RECOVERED')
+      const recovered = await history(secondBaseUrl, created.sessionId)
+      // The Web host may issue a separate provider request for its durable title; the resumed task is the first request after restart.
+      expect(requestCount).toBeGreaterThanOrEqual(2)
+      expect(recovered.events.filter(({ event }) => {
+        if (event.type !== 'user/message' || !isRecord(event.data) || !isRecord(event.data.source)) return false
+        return event.data.source.kind === 'user'
+      })).toHaveLength(1)
+      expect(hasAssistantMarker(recovered, 'WEB_RESTART_RECOVERED')).toBe(true)
+    } finally {
+      if (child !== undefined) await stop(child, 'SIGTERM')
+      await new Promise<void>(resolve => provider.close(() => { resolve() }))
       rmSync(workspace, { recursive: true, force: true })
     }
   })

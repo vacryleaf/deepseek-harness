@@ -752,6 +752,11 @@ export interface Config {
    * @default 1024
    */
   coldBlankProbeMaxBytes?: number
+  /**
+   * Whether Web startup wakes persisted root sessions whose final turn was interrupted.
+   * @default false
+   */
+  resumeInterruptedSessions?: boolean
 }
 ```
 

@@ -52,6 +52,7 @@ function agentForCwd(cwd: string): Agent {
     inject: () => { throw new Error('step-boundary catalog must not use agent.inject()') },
     cancel() {},
     runMaintenance: task => task(new AbortController().signal),
+    resumeInterruptedTurn: () => {},
     whenIdle: () => Promise.resolve(),
   }
 }
@@ -70,6 +71,7 @@ function sessionAgent(session: Session, id = 'tool-skill-agent'): Agent {
     inject: () => { throw new Error('step-boundary catalog must not use agent.inject()') },
     cancel() {},
     runMaintenance: task => task(new AbortController().signal),
+    resumeInterruptedTurn: () => {},
     whenIdle: () => Promise.resolve(),
   }
 }

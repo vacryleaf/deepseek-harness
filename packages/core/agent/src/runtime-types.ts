@@ -124,6 +124,13 @@ export interface Agent {
   followup(message: UserMessage): void
 
   /**
+   * Re-run the final interrupted turn from its durable conversation history.
+   * This operation requires an idle agent whose last durable event is an
+   * interrupted turn and does not append another user message.
+   */
+  resumeInterruptedTurn(): void
+
+  /**
    * Submit steering for the nearest step. An idle driver starts a turn;
    * a running driver consumes it at its next step boundary.
    * A rejected step leaves steering parked in the inbox until the next

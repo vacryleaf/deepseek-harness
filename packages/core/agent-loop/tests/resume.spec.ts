@@ -157,7 +157,55 @@ describe('the session-persistence Agent Note: AgentLoop factory create/resume', 
     }))
     await waitForIdle(ctx, handle.agent)
     expect(handle.agent.session.deriveMessages()).toHaveLength(5)
-    expect(handle.agent.session.events.at(-1)).toMatchObject({
+    expect(handle.agent.session.events.findLast(event => event.type !== 'session/end-seed')).toMatchObject({
+      type: 'turn/end',
+      data: { reason: { kind: 'completed' } },
+    })
+    await handle.dispose()
+    await ctx.fiber.dispose()
+  })
+
+  it('retries an interrupted turn from durable history without duplicating the user message', async () => {
+    const sessionId = SessionId('interrupted-turn-resume')
+    const first = await persistentHarness(new MockAdapter([]))
+    await first.ctx.sessionPersistence.create({
+      version: SESSION_FORMAT_VERSION,
+      id: sessionId,
+      createdAt: 1,
+      cwd: '/proj',
+    })
+    await first.ctx.sessionPersistence.append(sessionId, [
+      { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
+      {
+        type: 'user/message', seq: 1, time: 2,
+        data: { content: [{ type: 'text', text: 'continue this task' }], source: { kind: 'user' } },
+        surfaceOp: 'append',
+      },
+      { type: 'step/start', seq: 2, time: 3, data: { turn: 1, step: 1 } },
+    ] as unknown as SessionEvent[])
+    await first.ctx.fiber.dispose()
+
+    const ctx = await mountPersistentHarness(first.root, new MockAdapter([textResponse('continued')]))
+    const handle = await ctx.agents.resume({
+      resumeSessionId: sessionId,
+      agentOptions: { provider: 'mock', model: 'mock' },
+    })
+    expect(handle.agent.session.events.findLast(event => event.type !== 'session/end-seed')).toMatchObject({
+      type: 'turn/end',
+      data: { reason: { kind: 'interrupted' } },
+    })
+    expect(handle.agent.session.events.filter(event => event.type === 'user/message')).toHaveLength(1)
+
+    handle.agent.resumeInterruptedTurn()
+    await waitForIdle(ctx, handle.agent)
+
+    expect(handle.agent.session.events.filter(event => event.type === 'user/message')).toHaveLength(1)
+    expect(handle.agent.session.events.filter(event => event.type === 'turn/start')).toHaveLength(2)
+    expect(handle.agent.session.deriveMessages()).toMatchObject([
+      { role: 'user' },
+      { role: 'assistant' },
+    ])
+    expect(handle.agent.session.events.findLast(event => event.type !== 'session/end-seed')).toMatchObject({
       type: 'turn/end',
       data: { reason: { kind: 'completed' } },
     })

@@ -40,6 +40,7 @@ function stubAgent(rawId: string, supplied?: Session): StubAgent {
     },
     cancel() {},
     runMaintenance: task => task(new AbortController().signal),
+    resumeInterruptedTurn() {},
     whenIdle() { return Promise.resolve() },
   }
   return { agent, session, setStatus(value) { status = value } }

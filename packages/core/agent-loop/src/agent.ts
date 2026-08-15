@@ -65,6 +65,7 @@ export class ReactLoopAgent implements Agent {
   readonly inbox: Inbox
   private phase: Phase
   private activityDone: Promise<void> = Promise.resolve()
+  private resumeRequested = false
 
   /** The agent-scoped registration boundary; the lifecycle owner unwinds it after the driver exits. */
   readonly scope: Scope
@@ -123,6 +124,16 @@ export class ReactLoopAgent implements Agent {
     this.send(input, 'next-turn', true)
   }
 
+  resumeInterruptedTurn(): void {
+    if (this.phase.kind !== 'idle') throw new Error(`agent "${this.id}" cannot resume an interrupted turn while active`)
+    const last = this.session.events.findLast(event => event.type !== 'session/end-seed')
+    if (last?.type !== 'turn/end' || last.data.reason.kind !== 'interrupted') {
+      throw new Error(`agent "${this.id}" has no interrupted turn to resume`)
+    }
+    this.resumeRequested = true
+    this.wakeDriver()
+  }
+
   steer(input: UserMessage): void {
     this.send(input, 'next-step', true)
   }
@@ -132,6 +143,7 @@ export class ReactLoopAgent implements Agent {
   }
 
   cancel(cause: AgentCancelCause, options: CancelOptions = {}): void {
+    this.resumeRequested = false
     if (!options.keepInbox) {
       this.inbox.clear()
       if (this.phase.kind !== 'idle') this.phase.wakeRequested = false
@@ -250,6 +262,8 @@ export class ReactLoopAgent implements Agent {
     const phase = this.phase
     const { signal } = phase.abort
     signal.throwIfAborted()
+    const resume = this.resumeRequested
+    this.resumeRequested = false
     const turn = phase.turn + 1
     try {
       this.session.append('turn/start', { turn })
@@ -271,7 +285,7 @@ export class ReactLoopAgent implements Agent {
         if (turnEnds && decision.messages.length === 0) break
         // A removed waking message or an enter decision rewritten to empty
         // still owns the initial turn boundary, but it spends no model call.
-        if (phase.step === 0 && decision.messages.length === 0) {
+        if (phase.step === 0 && decision.messages.length === 0 && !resume) {
           turnEnds = { kind: 'completed' }
           return false
         }

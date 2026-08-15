@@ -53,6 +53,7 @@ function stubAgent(session: Session): Agent {
     inject: () => {},
     cancel() {},
     runMaintenance: job => job(new AbortController().signal),
+    resumeInterruptedTurn: () => {},
     whenIdle: () => Promise.resolve(),
   }
 }

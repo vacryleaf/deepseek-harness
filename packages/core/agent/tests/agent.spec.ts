@@ -33,6 +33,7 @@ function stubAgent(rawId: string, overrides: Partial<Agent> = {}): Agent {
     inject: () => {},
     cancel() {},
     runMaintenance: task => task(new AbortController().signal),
+    resumeInterruptedTurn: () => {},
     whenIdle: () => Promise.resolve(),
   }
   return Object.assign(agent, overrides)

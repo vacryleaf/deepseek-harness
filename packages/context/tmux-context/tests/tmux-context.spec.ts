@@ -105,6 +105,7 @@ function sessionAgent(session: Session, id = 'agent'): Agent {
     inject: () => { throw new Error('tmux-context must append directly to the open step') },
     cancel() {},
     runMaintenance: task => task(new AbortController().signal),
+    resumeInterruptedTurn: () => {},
     whenIdle: () => Promise.resolve(),
   }
 }

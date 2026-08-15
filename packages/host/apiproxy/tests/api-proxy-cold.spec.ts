@@ -324,6 +324,67 @@ describe('cold history recovery view', () => {
   })
 })
 
+describe('interrupted-session startup recovery', () => {
+  it('resumes only interrupted root sessions and is idempotent', async () => {
+    const ctx = new Context()
+    await ctx.plugin(TypertRegistry)
+    await ctx.plugin(SessionStore)
+    await ctx.plugin(AgentRegistry)
+    await ctx.plugin(UserQuestionService)
+    const rootId = sid('startup-recovery-root')
+    const childId = sid('startup-recovery-child')
+    const completedId = sid('startup-recovery-completed')
+    const rootMeta = header(rootId, 1000)
+    const childMeta = header(childId, 1001, { parentSession: rootId, origin: 'subagent' })
+    const completedMeta = header(completedId, 1002)
+    const interrupted = [
+      { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
+      { type: 'turn/end', seq: 1, time: 2, data: { turn: 1, reason: { kind: 'interrupted' } } },
+    ] as unknown as SessionEvent[]
+    const completed = [
+      { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
+      { type: 'turn/end', seq: 1, time: 2, data: { turn: 1, reason: { kind: 'completed' } } },
+    ] as unknown as SessionEvent[]
+    const inspect = vi.fn(async (id: SessionId) => ({
+      meta: id === rootId ? rootMeta : id === childId ? childMeta : completedMeta,
+      events: id === completedId ? completed : interrupted,
+    }))
+    ctx.provide('sessionPersistence', {
+      list: () => Promise.resolve([rootMeta, childMeta, completedMeta]),
+      listSnapshots: () => Promise.resolve([rootMeta, childMeta, completedMeta].map(header => ({
+        header, revision: SessionPersistenceRevision('startup-recovery:1'),
+      }))),
+      inspect,
+      locate: () => undefined,
+    } as never)
+    const resumeInterruptedTurn = vi.fn()
+    const resumedAgent = {
+      id: rootId,
+      session: { id: rootId, header: rootMeta, events: interrupted },
+      status: 'idle',
+      ctx,
+      resumeInterruptedTurn,
+    } as unknown as Agent
+    const resume = vi.spyOn(ctx.agents, 'resume').mockResolvedValue({
+      agent: resumedAgent,
+      dispose: () => Promise.resolve(),
+    })
+    const api = createApiProxy(ctx, { defaultModelSelection: () => ({ provider: 'p', model: 'm' }), cwd: '/tmp' })
+
+    await api.resumeInterruptedSessions()
+    await api.resumeInterruptedSessions()
+
+    expect(inspect).toHaveBeenCalledTimes(3)
+    expect(inspect.mock.calls.filter(([id]) => id === rootId)).toHaveLength(2)
+    expect(inspect.mock.calls.filter(([id]) => id === childId)).toHaveLength(0)
+    expect(inspect).toHaveBeenCalledWith(completedId)
+    expect(resume).toHaveBeenCalledOnce()
+    expect(resume).toHaveBeenCalledWith(expect.objectContaining({ resumeSessionId: rootId }))
+    expect(resumeInterruptedTurn).toHaveBeenCalledOnce()
+    await ctx.fiber.dispose()
+  })
+})
+
 describe('Remote Agent and Session lookup policy', () => {
   it('deduplicates a cold resume across Agent and Session parameters', async () => {
     const ctx = new Context()

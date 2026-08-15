@@ -94,6 +94,7 @@ describe.skipIf(!process.env.E2B_API_KEY)('E2B live Loader composition', () => {
         inject() {},
         cancel() {},
         runMaintenance: task => task(new AbortController().signal),
+        resumeInterruptedTurn: () => {},
         whenIdle: () => Promise.resolve(),
       }
       const backend = new BashTerminalBackend(ctx, {

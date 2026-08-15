@@ -632,6 +632,15 @@ function directoryError(error: unknown): RpcError {
   return { code: 'internal', message: error instanceof Error ? error.message : String(error), details: {} }
 }
 
+/** Host lifecycle extensions returned alongside the transport-agnostic API. */
+export interface ApiProxyRuntime extends ApiProxy {
+  /**
+   * Inspect persisted root sessions and wake each final interrupted turn once.
+   * @returns fulfillment after all eligible sessions have been inspected and triggered.
+   */
+  resumeInterruptedSessions(): Promise<void>
+}
+
 /** Resolved Agent model and project-directory defaults consumed by the API implementation. */
 export interface ApiProxyDefaults {
   /**
@@ -1101,9 +1110,9 @@ function changedWorkspaceView(workspaceId: string, value: unknown): WorkspaceVie
  * Implement ApiProxy over a composed host context.
  * @param ctx - a context with the Host spine and Workspace registry mounted.
  * @param defaults - host routing and project-directory defaults.
- * @returns the ApiProxy implementation.
+ * @returns the ApiProxy implementation and its host lifecycle helpers.
  */
-export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiProxy {
+export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiProxyRuntime {
   const sessionExportCompressionLevel = defaults.sessionExportCompressionLevel
     ?? DEFAULT_SESSION_LOG_COMPRESSION_LEVEL
   const coldBlankProbeMaxBytes = defaults.coldBlankProbeMaxBytes
@@ -1269,6 +1278,43 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
     setup: async ({ meta, events }) =>
       (await composeAgent(resolveSessionPreset({ header: meta, events }))).setup,
   })
+
+  let interruptedRecovery: Promise<void> | undefined
+  const resumeInterruptedSessions = (): Promise<void> => {
+    if (interruptedRecovery !== undefined) return interruptedRecovery
+    interruptedRecovery = (async () => {
+      const persistence = ctx.get('sessionPersistence')
+      if (persistence === undefined) {
+        throw new Error('interrupted-session recovery requires session persistence')
+      }
+      for (const snapshot of await persistence.listSnapshots()) {
+        const meta = snapshot.header
+        if (meta.cwd === undefined || meta.origin === 'subagent') continue
+        if (ctx.agents.get(meta.id) !== undefined) continue
+        let inspected
+        try {
+          inspected = await persistence.inspect(meta.id)
+        } catch (error: unknown) {
+          ctx.logger.warn(`interrupted-session inspection failed for "${meta.id}": ${String(error)}`)
+          continue
+        }
+        const last = inspected.events.findLast(event => event.type !== 'session/end-seed')
+        if (last?.type !== 'turn/end' || last.data.reason.kind !== 'interrupted') continue
+        if (hasSubagentOwner({ header: inspected.meta }, undefined)) continue
+        const found = await agentFor(meta.id)
+        if ('error' in found) {
+          ctx.logger.warn(`interrupted-session resume skipped for "${meta.id}": ${found.error.message}`)
+          continue
+        }
+        try {
+          found.agent.resumeInterruptedTurn()
+        } catch (error: unknown) {
+          ctx.logger.warn(`interrupted-session resume failed for "${meta.id}": ${String(error)}`)
+        }
+      }
+    })()
+    return interruptedRecovery
+  }
 
   /** Send one transient frame to every connected mux consumer. */
   function broadcast(payload: MuxFrame): void {
@@ -2024,6 +2070,7 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
   }
 
   return {
+    resumeInterruptedSessions,
     sessions: {
       // Attached sessions summarize from memory; persisted-but-unattached (cold)
       // sessions merge in from the persistence store so history survives restarts.

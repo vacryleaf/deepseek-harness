@@ -44,6 +44,7 @@ function agent(ctx: Context): Agent {
     inject: () => {},
     cancel() { status = 'idle' },
     runMaintenance: task => task(new AbortController().signal),
+    resumeInterruptedTurn: () => {},
     whenIdle: () => Promise.resolve(),
   }
   ctx.agents.register(value)
