@@ -581,14 +581,14 @@ describe('sandbox escalation through ctx.approval', () => {
     expect(schema.parameters.properties).not.toHaveProperty('sandbox_permissions')
   })
 
-  it('rejects injected escalation without a sandbox and non-widening escalation without prompting', async () => {
+  it('rejects injected escalation without a sandbox and narrower or invalid escalation without prompting', async () => {
     const plain = await setup()
     expect(text(await call(plain.ctx, 'pwsh', escalate))).toContain('not available in this composition')
 
     const { ctx } = await setupSandboxed(true)
     const prompted = vi.fn()
     ctx.on('approval/request', () => { prompted(); return Promise.resolve<ApprovalOutcome>('allowed-once') })
-    const result = await call(ctx, 'pwsh', { ...escalate, sandbox_permissions: 'workspace-write' }, sandboxAgent('workspace-write'))
+    const result = await call(ctx, 'pwsh', escalate, sandboxAgent('danger-full-access'))
     expect(text(result)).toContain('not strictly wider')
     expect(prompted).not.toHaveBeenCalled()
 
@@ -598,6 +598,15 @@ describe('sandbox escalation through ctx.approval', () => {
       data: { mode: 'unknown-mode' },
     })
     expect(text(await call(ctx, 'pwsh', escalate, malformed))).toContain('not strictly wider')
+  })
+
+  it('reuses a matching sandbox mode without prompting', async () => {
+    const { ctx } = await setupSandboxed(true)
+    const prompted = vi.fn()
+    ctx.on('approval/request', () => { prompted(); return Promise.resolve<ApprovalOutcome>('allowed-once') })
+    const result = await call(ctx, 'pwsh', escalate, sandboxAgent('workspace-write'))
+    expect(result.isError).toBe(false)
+    expect(prompted).not.toHaveBeenCalled()
   })
 
   it('fails closed when approval cannot be routed', async () => {

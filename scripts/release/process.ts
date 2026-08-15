@@ -26,6 +26,22 @@ export interface CommandResult {
 }
 
 /**
+ * Construct a shell-free invocation of the pnpm lifecycle entrypoint that
+ * launched this release script.
+ * @param args - arguments passed to pnpm after its JavaScript entrypoint.
+ * @param entrypoint - the `npm_execpath` inherited from the pnpm script.
+ * @returns the Node command and arguments that invoke pnpm.
+ */
+export function pnpmInvocation(args: readonly string[], entrypoint = process.env.npm_execpath): { command: string; args: string[] } {
+  if (entrypoint === undefined || entrypoint === '') {
+    throw new Error('release: npm_execpath is unavailable; invoke the release script through a pnpm package script')
+  }
+  // Windows cannot spawn the pnpm.cmd shim directly; invoking its JavaScript
+  // entrypoint works on every host without a shell.
+  return { command: process.execPath, args: [entrypoint, ...args] }
+}
+
+/**
  * Run a command and capture its output without judging the exit status.
  * @param command - executable name.
  * @param args - command arguments.

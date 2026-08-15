@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { releaseFamily, tarballName, type ReleaseFamily, type ReleaseMember } from './families.ts'
-import { isEntry, run } from './process.ts'
+import { isEntry, pnpmInvocation, run } from './process.ts'
 import { PUBLISH_ORDER_FILE, tarballFiles } from './tarball.ts'
 
 /** Where pack output lands when `--out` is omitted. */
@@ -25,7 +25,8 @@ const DEFAULT_OUTPUT = 'dist/npm'
  * @returns The tarball filename.
  */
 function packMember(family: ReleaseFamily, member: ReleaseMember, destination: string): string {
-  run('pnpm', ['--dir', member.directory, 'pack', '--pack-destination', destination])
+  const pnpm = pnpmInvocation(['--dir', member.directory, 'pack', '--pack-destination', destination])
+  run(pnpm.command, pnpm.args)
 
   const filename = tarballName(member)
   const tarball = join(destination, filename)

@@ -890,6 +890,18 @@ describe('sandbox escalation API (write/edit)', () => {
     expect(fs.stamped).toEqual([{ mode: 'danger-full-access', workspaceRoot: resolve('/session-project') }])
   })
 
+  it('a matching sandbox mode reuses the standing policy without approval', async () => {
+    const { ctx, fs } = await setupConfining()
+    const result = await call(
+      ctx,
+      'write',
+      { file_path: 'a.txt', content: 'x', sandbox_permissions: 'workspace-write', justification: 'the write needs workspace access' },
+      escalationAgent(),
+    )
+    expect(result.isError).toBe(false)
+    expect(fs.stamped).toEqual([{ mode: 'workspace-write', workspaceRoot: resolve('/session-project') }])
+  })
+
   it('a rejected escalation fails closed with its own text and never mutates', async () => {
     const { ctx, fs } = await setupConfining({ approval: true })
     ctx.on('approval/request', () => Promise.resolve('rejected' as const))

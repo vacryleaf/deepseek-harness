@@ -200,9 +200,9 @@ export function apply(ctx: Context, config: Config = {}): void {
     sandboxPolicy?.resolve(exec.agent === undefined ? {} : { session: exec.agent.session })
 
   /**
-   * Resolve a sandbox-escalation request through `ctx.approval` BEFORE
-   * anything executes, delegating the shared fail-closed sequence (strict
-   * widening, channel resolution, outcome mapping) to
+   * Resolve a sandbox-permissions request BEFORE
+   * anything executes, delegating the shared sequence (same-mode reuse,
+   * wider-mode approval, channel resolution, outcome mapping) to
    * {@link approveEscalation}. This tool contributes only the composition
    * guard (the fields are unadvertised without a sandboxing executor, yet
    * schema validation checks advertised keys only, so an unadvertised
@@ -260,11 +260,12 @@ export function apply(ctx: Context, config: Config = {}): void {
         sandbox_permissions: {
           type: 'string' as const,
           enum: [...escalationModes],
-          description: 'The wider sandbox mode this command needs. Only valid as a one-shot retry of a command the sandbox just denied; requires justification and user approval.',
+          description: 'The sandbox mode this command needs. A request matching the current mode proceeds without an approval '
+            + 'prompt; after a denial, use the narrowest wider mode that suffices.',
         },
         justification: {
           type: 'string' as const,
-          description: 'Required with sandbox_permissions: one sentence for the user explaining why this exact command needs the wider access.',
+          description: 'Required with sandbox_permissions: one sentence for the user explaining why this exact command needs this sandbox mode.',
         },
       } : {},
     },

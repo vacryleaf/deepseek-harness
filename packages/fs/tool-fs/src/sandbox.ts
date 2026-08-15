@@ -1,7 +1,7 @@
 /**
  * The sandbox-escalation API shared by the `write` and `edit` tools: the
  * per-call policy resolution, the advertised escalation fields, and the denial-marker
- * mapping — all delegating the vocabulary and the fail-closed approval
+ * mapping — all delegating the vocabulary and mode-comparison/approval
  * sequence to `@deepseek-ai/dsh-sandbox` (the same pieces `@deepseek-ai/dsh-tool-bash`
  * uses), so bash and fs escalate identically. Built ONCE per plugin from
  * `ctx.fs.sandboxMode` (the capability fact — is a confining backend mounted?)
@@ -31,8 +31,8 @@ export interface EscalationSchemaFields {
 
 /**
  * The filesystem escalation API: advertisement gating, per-call policy
- * resolution, the one-approved wider retry, and denial-marker mapping. A pure
- * product of `ctx` at plugin apply time.
+ * resolution, same-mode reuse, the one-approved wider retry, and
+ * denial-marker mapping. A pure product of `ctx` at plugin apply time.
  */
 export class FsSandboxController {
   /** The escalation targets this composition advertises (`[]` when no confining backend is mounted). */
@@ -52,8 +52,8 @@ export class FsSandboxController {
   /**
    * The escalation schema fields for a mutating tool's `parameters`. Call it
    * only under a confining backend (guard on {@link escalationModes}); the
-   * enum pins the closed target vocabulary, the strict-wider check happens per
-   * call at execution.
+   * enum pins the closed target vocabulary; execution compares the requested
+   * and effective modes per call.
    * @returns the two escalation parameter specs.
    */
   schemaFields(): EscalationSchemaFields {
@@ -61,21 +61,21 @@ export class FsSandboxController {
       sandbox_permissions: {
         type: 'string',
         enum: [...this.escalationModes],
-        description: 'The wider sandbox mode this file operation needs. Only valid as a one-shot retry '
-          + 'of an operation the sandbox just denied; requires justification and user approval.',
+        description: 'The sandbox mode this file operation needs. A request matching the current mode proceeds without '
+          + 'an approval prompt; after a denial, use the narrowest wider mode that suffices.',
       },
       justification: {
         type: 'string',
         description: 'Required with sandbox_permissions: one sentence for the user explaining '
-          + 'why this exact file operation needs the wider access.',
+          + 'why this exact file operation needs this sandbox mode.',
       },
     }
   }
 
   /**
-   * The policy to stamp onto this mutation: an approved escalation grant (a
-   * strictly wider retry resolved through `ctx.approval` before anything
-   * executes), else the session's standing mode. The calling session's cwd is
+   * The policy to stamp onto this mutation: a matching request reuses the
+   * standing mode, while a strictly wider retry resolves through
+   * `ctx.approval` before anything executes. The calling session's cwd is
    * always carried as the workspace root. Validates the escalation argument
    * pairing first.
    * @param toolName - the mutating tool's name, for the approval audit trail.

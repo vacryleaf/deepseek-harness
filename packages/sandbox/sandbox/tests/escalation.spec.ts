@@ -1,8 +1,8 @@
 /**
- * Tests for the shared escalation vocabulary and choreography: the strictly-
- * wider ladder, the argument-pairing validation, the model-facing markers, and
- * {@link approveEscalation}'s ordered fail-closed sequence. Both enforcing tool
- * families (`dsh-tool-bash`, `dsh-tool-fs`) delegate here, so the ordering and
+ * Tests for the shared escalation vocabulary and choreography: the mode
+ * ladder, the argument-pairing validation, the model-facing markers, and
+ * {@link approveEscalation}'s ordered mode-comparison and approval sequence.
+ * Both enforcing tool families (`dsh-tool-bash`, `dsh-tool-fs`) delegate here, so the ordering and
  * verbatim texts are pinned once, next to the vocabulary that owns them.
  */
 
@@ -81,13 +81,35 @@ describe('approveEscalation', () => {
     expect(seen[0]?.reason).toBe('escalate sandbox to workspace-write: the user asked to write in the workspace')
   })
 
-  it('a non-widening request fails closed with its own text and never asks', async () => {
+  it.each(['read-only', 'workspace-write', 'danger-full-access'] as const)(
+    'an already-satisfied %s request returns the current mode without asking for approval',
+    async (mode) => {
+      const seen: unknown[] = []
+      const granted = await approveEscalation(
+        req({ requestedMode: mode, effectiveMode: mode }),
+        ingredients({ approver: approver('rejected', request => seen.push(request)) }),
+      )
+      expect(granted).toBe(mode)
+      expect(seen).toEqual([])
+    },
+  )
+
+  it('an already-satisfied request does not require approval context', async () => {
+    await expect(approveEscalation(
+      req({ effectiveMode: 'workspace-write' as never }),
+      ingredients({ approver: undefined, agent: undefined }),
+    )).resolves.toBe('workspace-write')
+  })
+
+  it('a narrower, invalid, or malformed equal request fails closed with its own text and never asks', async () => {
     const seen: unknown[] = []
     const spy = ingredients({ approver: approver('allowed-once', r => seen.push(r)) })
-    await expect(approveEscalation(req({ requestedMode: 'read-only' }), spy))
-      .rejects.toThrow(/not strictly wider than this call's current "read-only" mode/)
+    await expect(approveEscalation(req({ requestedMode: 'read-only', effectiveMode: 'workspace-write' as never }), spy))
+      .rejects.toThrow(/not strictly wider than this call's current "workspace-write" mode/)
     await expect(approveEscalation(req({ requestedMode: 'workspace-write', effectiveMode: 'danger-full-access' as never }), spy))
       .rejects.toThrow(/not strictly wider/)
+    await expect(approveEscalation(req({ requestedMode: 'unknown-mode', effectiveMode: 'unknown-mode' as never }), spy))
+      .rejects.toThrow(/not strictly wider than this call's current "unknown-mode" mode/)
     expect(seen).toEqual([])
   })
 

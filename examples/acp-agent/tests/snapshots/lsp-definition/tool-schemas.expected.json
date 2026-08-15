@@ -28,7 +28,7 @@
           },
           "sandbox_permissions": {
             "type": "string",
-            "description": "The wider sandbox mode this command needs. Only valid as a one-shot retry of a command the sandbox just denied; requires justification and user approval.",
+            "description": "The sandbox mode this command needs. A request matching the current mode proceeds without an approval prompt; after a denial, use the narrowest wider mode that suffices.",
             "enum": [
               "workspace-write",
               "danger-full-access"
@@ -36,7 +36,7 @@
           },
           "justification": {
             "type": "string",
-            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact command needs the wider access."
+            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact command needs this sandbox mode."
           }
         },
         "required": [
@@ -89,7 +89,7 @@
           },
           "sandbox_permissions": {
             "type": "string",
-            "description": "The wider sandbox mode this file operation needs. Only valid as a one-shot retry of an operation the sandbox just denied; requires justification and user approval.",
+            "description": "The sandbox mode this file operation needs. A request matching the current mode proceeds without an approval prompt; after a denial, use the narrowest wider mode that suffices.",
             "enum": [
               "workspace-write",
               "danger-full-access"
@@ -97,7 +97,7 @@
           },
           "justification": {
             "type": "string",
-            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access."
+            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs this sandbox mode."
           }
         },
         "required": [
@@ -538,7 +538,7 @@
           },
           "sandbox_permissions": {
             "type": "string",
-            "description": "The wider sandbox mode this file operation needs. Only valid as a one-shot retry of an operation the sandbox just denied; requires justification and user approval.",
+            "description": "The sandbox mode this file operation needs. A request matching the current mode proceeds without an approval prompt; after a denial, use the narrowest wider mode that suffices.",
             "enum": [
               "workspace-write",
               "danger-full-access"
@@ -546,7 +546,7 @@
           },
           "justification": {
             "type": "string",
-            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access."
+            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs this sandbox mode."
           }
         },
         "required": [
