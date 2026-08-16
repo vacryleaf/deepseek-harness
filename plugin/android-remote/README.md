@@ -6,7 +6,7 @@ This module is a native Android WebView shell for a remotely hosted DSH Web appl
 
 ## Build
 
-Open apps/android in Android Studio or run gradlew.bat :app:assembleDebug after the Gradle wrapper is generated. The debug APK is written to app/build/outputs/apk/debug/app-debug.apk. The debug build accepts HTTP URLs for local-network testing. Release builds accept HTTPS URLs only; the current release output is unsigned and needs a signing configuration before distribution.
+Open plugin/android-remote in Android Studio or run gradlew.bat :app:assembleDebug after the Gradle wrapper is generated. The debug APK is written to app/build/outputs/apk/debug/app-debug.apk. The debug build accepts HTTP URLs for local-network testing. Release builds accept HTTPS URLs only; the current release output is unsigned and needs a signing configuration before distribution.
 
 ## App behavior
 

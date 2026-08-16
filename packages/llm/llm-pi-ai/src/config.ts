@@ -275,7 +275,7 @@ export const Config: z<Config> = z.object({
  * @throws Error naming the route and model that cannot be served.
  */
 export function assertServiceable(config: Config): void {
-  resolveProfiles(config.providers)
+  resolveProfiles(config.providers, config.defaultRetryPolicy)
 }
 
 /** Reject removed pre-release profile fields and name their replacements. */

@@ -6,7 +6,7 @@
 
 ## 构建
 
-在 Android Studio 中打开 apps/android，或在已生成 Gradle Wrapper 后运行 gradlew.bat :app:assembleDebug。Debug APK 输出到 app/build/outputs/apk/debug/app-debug.apk。Debug 构建允许使用 HTTP 地址进行局域网测试；Release 构建只接受 HTTPS 地址，当前 Release 输出未签名，分发前需要配置签名。
+在 Android Studio 中打开 plugin/android-remote，或在已生成 Gradle Wrapper 后运行 gradlew.bat :app:assembleDebug。Debug APK 输出到 app/build/outputs/apk/debug/app-debug.apk。Debug 构建允许使用 HTTP 地址进行局域网测试；Release 构建只接受 HTTPS 地址，当前 Release 输出未签名，分发前需要配置签名。
 
 ## App 行为
 

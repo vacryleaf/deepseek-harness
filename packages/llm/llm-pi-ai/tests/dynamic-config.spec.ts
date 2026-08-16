@@ -169,6 +169,20 @@ describe('request-level dynamic profiles', () => {
     expect(ctx.llm.listProviders().map(provider => provider.id)).toEqual(['openai'])
   })
 
+  it('rejects an invalid inherited retry policy before persisting it', async () => {
+    const dir = await home()
+    const ctx = await boot(dir, { providers: { openai: {} } })
+
+    await expect(ctx.settings.update(NS, {
+      defaultRetryPolicy: {
+        mode: 'always',
+        backoff: { initialDelayMs: 100, maxDelayMs: 10 },
+      },
+    })).rejects.toThrow(/defaultRetryPolicy\.backoff\.initialDelayMs must be less than or equal to maxDelayMs/)
+    expect(ctx.llm.providerRetryPolicy('openai')).toMatchObject({ mode: 'normal' })
+    expect(ctx.llm.listProviders().map(provider => provider.id)).toEqual(['openai'])
+  })
+
   it('refuses a settings write this adapter could not serve, leaving its routes alone', async () => {
     const dir = await home()
     const ctx = await boot(dir, { providers: { openai: {} } })
