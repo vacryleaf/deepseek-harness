@@ -1,0 +1,3 @@
+- insert:
+    - id: pi-ai-retry-always
+      name: '@deepseek-ai/dsh-pi-ai-retry-always'
