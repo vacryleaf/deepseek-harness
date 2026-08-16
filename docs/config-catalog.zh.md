@@ -905,13 +905,8 @@ export interface DeepSeekCatalogModel {
 需要：`llm`
 
 ```ts config-catalog
-/** Plugin configuration: the provider routes and inherited policy this instance owns. */
+/** Plugin configuration: the provider routes this instance owns. */
 export interface Config {
-  /**
-   * Retry policy inherited by profiles that omit their own policy. A composition
-   * can set this without changing the standalone resolver default.
-   */
-  defaultRetryPolicy?: RetryPolicyConfig
   /**
    * pi-ai provider routes, keyed by provider. An empty (or omitted) dict is
    * the dormant settings-driven posture: the adapter mounts with no routes

@@ -12,7 +12,7 @@ The bundle replaces the llm-deepseek configuration row with retryPolicy mode alw
 
 The bundle mounts a settings consumer that reads the llm-pi-ai namespace and adds retryPolicy mode always to every provider profile that does not already declare a policy. It repeats reconciliation when settings change, so providers added from the Models page receive the same default. Existing explicit policies are preserved.
 
-The policy is validated and persisted by the normal settings provider. The existing dsh-llm-retry plugin continues to own backoff, cancellation, session events, and disposal. This avoids the leaf-only defaultRetryPolicy configuration field and works with master.
+The policy is validated and persisted by the normal settings provider. The existing dsh-llm-retry plugin continues to own backoff, cancellation, session events, and disposal. The explicit provider policies work with master.
 
 ## Install
 

@@ -12,7 +12,7 @@
 
 这个 bundle 挂载 settings consumer，读取 llm-pi-ai 命名空间，为没有显式策略的每个 provider profile 添加 retryPolicy mode always。settings 变化时会再次协调，因此从 Models 页面新增的 provider 也会获得相同默认策略。已有显式策略会被保留。
 
-策略由标准 settings provider 校验和持久化。现有 dsh-llm-retry plugin 继续负责 backoff、取消、session 事件和释放处理。这个方案不使用 leaf-only 的 defaultRetryPolicy 配置字段，并兼容 master。
+策略由标准 settings provider 校验和持久化。现有 dsh-llm-retry plugin 继续负责 backoff、取消、session 事件和释放处理。显式的 provider 策略兼容 master。
 
 ## 安装
 

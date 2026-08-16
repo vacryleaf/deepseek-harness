@@ -35,9 +35,6 @@ describe('dsh-base bundle', () => {
     expect(rows.find(row => row.id === 'llm-deepseek')?.config).toMatchObject({
       retryPolicy: { mode: 'always' },
     })
-    expect(rows.find(row => row.id === 'llm-pi-ai')?.config).toMatchObject({
-      defaultRetryPolicy: { mode: 'always' },
-    })
     expect(rows.find(row => row.id === 'session-telemetry-otel')?.config?.['mode']).toEqual({
       __jsExpr: "process.env.DSH_TELEMETRY_MODE || 'DISABLED'",
     })

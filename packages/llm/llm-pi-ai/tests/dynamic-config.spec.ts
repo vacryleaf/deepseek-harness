@@ -136,19 +136,6 @@ describe('request-level dynamic profiles', () => {
     expect(server.headers[1]?.authorization).toBe('Bearer pk-two')
   })
 
-  it('inherits the composition retry policy for settings-born routes', async () => {
-    const dir = await home()
-    const ctx = await boot(dir, { defaultRetryPolicy: { mode: 'always' } })
-
-    await ctx.settings.update(NS, { providers: { openai: {} } })
-    expect(ctx.llm.providerRetryPolicy('openai')).toMatchObject({ mode: 'always' })
-
-    await ctx.settings.update(NS, {
-      providers: { openai: { retryPolicy: { mode: 'normal', maxRetries: 1 } } },
-    })
-    expect(ctx.llm.providerRetryPolicy('openai')).toMatchObject({ mode: 'normal', maxRetries: 1 })
-  })
-
   it('re-registers routes in place when a captured retry policy changes', async () => {
     const dir = await home()
     const ctx = await boot(dir, { providers: { openai: {} } })
@@ -166,20 +153,6 @@ describe('request-level dynamic profiles', () => {
       maxDelayMs: 100,
       jitterRatio: 0.2,
     })
-    expect(ctx.llm.listProviders().map(provider => provider.id)).toEqual(['openai'])
-  })
-
-  it('rejects an invalid inherited retry policy before persisting it', async () => {
-    const dir = await home()
-    const ctx = await boot(dir, { providers: { openai: {} } })
-
-    await expect(ctx.settings.update(NS, {
-      defaultRetryPolicy: {
-        mode: 'always',
-        backoff: { initialDelayMs: 100, maxDelayMs: 10 },
-      },
-    })).rejects.toThrow(/defaultRetryPolicy\.backoff\.initialDelayMs must be less than or equal to maxDelayMs/)
-    expect(ctx.llm.providerRetryPolicy('openai')).toMatchObject({ mode: 'normal' })
     expect(ctx.llm.listProviders().map(provider => provider.id)).toEqual(['openai'])
   })
 
