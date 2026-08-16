@@ -12,7 +12,7 @@
 
 设置页可以录入并保存多个经过校验的服务 origin。选择已保存服务会将其设为上次使用的服务，下次启动 App 时自动打开该地址。旧版本的单服务 service_url 偏好会迁移到服务列表。
 
-Android 13 及更新版本需要通知权限。服务加载期间，App 会启动低优先级的 `dataSync` 前台服务。该服务调用 `/api/session.list`，监听 `/api/events.mux` 和 `/api/events.host`，过滤根会话、带退避重连，并为每个完成的根任务发布原生通知。WebView bridge 仍作为页面加载时的备用通道，并使用相同的完成键去重。这是尽力而为的保活，不是 Android 的绝对保证：强制停止、厂商省电策略和系统级进程终止仍可能中断通知。这不是 FCM。远程宿主必须提供现有 HTTP API 和两个 WebSocket 路径；可选的 `window.DshAndroidBridge.onTaskCompleted` 回调只用于 WebView 备用通道。
+Android 13 及更新版本需要通知权限。服务加载期间，App 会启动低优先级的 `dataSync` 前台服务。该服务调用 `/api/session.list`，监听 `/api/events.mux` 和 `/api/events.host`，过滤根会话、带退避重连，并为每个完成的根任务发布原生通知。这是尽力而为的保活，不是 Android 的绝对保证：强制停止、厂商省电策略和系统级进程终止仍可能中断通知。这不是 FCM。远程宿主必须提供现有 HTTP API 和两个 WebSocket 路径。
 
 ## 更新 Web runtime
 
@@ -33,6 +33,6 @@ Android 13 及更新版本需要通知权限。服务加载期间，App 会启�
 
 配置的地址必须提供完整的 DSH Web 应用，包括 /api 和两个 WebSocket 事件路径。使用 HTTPS/WSS。实现直接加载远程 Web origin，因此页面请求保持同源，并继续使用现有 DSH Web 启动清单、HTTP RPC、WebSocket 流、上传和重连行为。
 
-Android 原生通知使用现有 DSH HTTP 和 WebSocket 事件路径，因此原生通道不要求增加 runtime bundle 版本。部署包含可选 runtime 回调的 Web 构建可以保留 WebView 备用通道，同一个 Web 构建仍可在普通浏览器中工作。
+Android 完成通知使用现有 DSH HTTP 和 WebSocket 事件路径，因此原生通道不要求增加 runtime bundle 版本。
 
 不要将回环服务直接暴露到公网。如果服务部署在私有 Tailnet 之外，应先在其前面配置带认证的 HTTPS 反向代理。

@@ -39,7 +39,6 @@ class MainActivity : Activity() {
     private val serviceStore by lazy {
         ServiceStore(getSharedPreferences(PREFERENCES, MODE_PRIVATE))
     }
-    private val taskCompletionNotifier by lazy { TaskCompletionNotifier(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -227,13 +226,6 @@ class MainActivity : Activity() {
 
         val web = WebView(this)
         remoteWebView = web
-        web.addJavascriptInterface(TaskCompletionBridge { completion ->
-            runOnUiThread {
-                if (remoteWebView === web) {
-                    taskCompletionNotifier.notifyTaskCompleted(url, completion)
-                }
-            }
-        }, ANDROID_BRIDGE)
         configureWebView(web)
         page.addView(web, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -241,7 +233,6 @@ class MainActivity : Activity() {
             1f,
         ))
         setContentView(page)
-        taskCompletionNotifier.ensureChannel()
         requestNotificationPermissionIfNeeded()
         DshKeepAliveService.start(this, url)
         web.loadUrl(url)
@@ -361,7 +352,6 @@ class MainActivity : Activity() {
     private fun destroyWebView() {
         remoteWebView?.let { web ->
             web.stopLoading()
-            web.removeJavascriptInterface(ANDROID_BRIDGE)
             web.webChromeClient = null
             web.destroy()
         }
@@ -407,7 +397,6 @@ class MainActivity : Activity() {
 
     private companion object {
         const val PREFERENCES = "dsh_android"
-        const val ANDROID_BRIDGE = "DshAndroidBridge"
         const val FILE_CHOOSER_REQUEST = 1001
         const val NOTIFICATION_PERMISSION_REQUEST = 1002
         const val NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"

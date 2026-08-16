@@ -78,10 +78,6 @@ A `turn/end` whose reason is `max-tokens` projects one `turn-max-tokens` node at
 
 Each resident `Session` owns a `modelSelection` snapshot containing the current `ModelSelection`, provider-grouped directory, provider-local failures, and the `idle`/`loading`/`ready`/`selecting`/`error` state. History establishes or refreshes the current selection, opening a selector refreshes the directory, and selection failures preserve the last selection and usable groups. Directory and selection operations share a monotonically increasing generation so an older response cannot overwrite a newer selection. A reconnect rebuild restores the selection reported by the Host without replacing unchanged selection substructure.
 
-## Native completion notifications
-
-When the optional Android WebView bridge exists, a live root-session `turn/end` event with `reason.kind: 'completed'` calls `window.DshAndroidBridge.onTaskCompleted`. The JSON payload contains `sessionId`, `turn`, and `seq`; a missing or failed bridge is ignored so ordinary browser sessions and event delivery continue. The callback observes live events only and does not replay history. Android's native foreground service independently listens to the existing Host HTTP and WebSocket event paths; the bridge is a WebView fallback rather than the only Android notification path.
-
 ## Model Experience
 
 None, as the session object layer selects the provider/model route used by a later Host request but adds no model-visible content.

@@ -12,7 +12,7 @@ Open plugin/android-remote in Android Studio or run gradlew.bat :app:assembleDeb
 
 The setup screen accepts and saves multiple validated service origins. Selecting a saved service makes it the last service, and the next app launch opens that origin automatically. The old single-service `service_url` preference is migrated into the service list.
 
-Android 13 and newer requires the notification permission. While a service is loaded, the app starts a low-priority `dataSync` foreground service. The service calls `/api/session.list`, listens to `/api/events.mux` and `/api/events.host`, filters root sessions, reconnects with backoff, and posts a native notification for each completed root turn. The WebView bridge remains a fallback for a loaded page and uses the same completion key for deduplication. This is best-effort retention, not an Android guarantee: force-stop, OEM battery policies, and system-level process termination can still stop delivery. This is not FCM. The remote host must expose the existing HTTP API and both WebSocket paths; the optional `window.DshAndroidBridge.onTaskCompleted` callback is only needed for the WebView fallback.
+Android 13 and newer requires the notification permission. While a service is loaded, the app starts a low-priority `dataSync` foreground service. The service calls `/api/session.list`, listens to `/api/events.mux` and `/api/events.host`, filters root sessions, reconnects with backoff, and posts a native notification for each completed root turn. This is best-effort retention, not an Android guarantee: force-stop, OEM battery policies, and system-level process termination can still stop delivery. This is not FCM. The remote host must expose the existing HTTP API and both WebSocket paths.
 
 ## Updating the Web runtime
 
@@ -33,6 +33,6 @@ Open the HTTPS hostname shown by tailscale serve in the Android app. The phone a
 
 The configured address must serve the complete DSH Web application, including /api and the two WebSocket event paths. Use HTTPS/WSS. The first implementation intentionally loads the remote Web origin directly, so page requests remain same-origin and keep the existing DSH Web boot manifest, HTTP RPC, WebSocket streams, uploads, and reconnect behavior unchanged.
 
-For Android completion notifications, the native service uses the existing DSH HTTP and WebSocket event paths, so a runtime bundle version bump is not required for the native path. Deploying a Web build containing the optional runtime callback preserves the WebView fallback, and the same Web build continues to work in ordinary browsers.
+For Android completion notifications, the native service uses the existing DSH HTTP and WebSocket event paths, so a runtime bundle version bump is not required.
 
 Do not expose the loopback service directly to the public Internet. If the service is deployed outside a private Tailnet, put an authenticated HTTPS reverse proxy in front of it before allowing access.

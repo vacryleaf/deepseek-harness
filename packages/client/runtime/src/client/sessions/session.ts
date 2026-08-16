@@ -27,7 +27,6 @@ import { ProjectionValueStore } from './projection-store.ts'
 import type { ProjectionsBaseline } from './projection-store.ts'
 import { resolvedClientTimeZone } from '../time-zone.ts'
 import { SessionQueueMirror } from './queue-mirror.ts'
-import { publishNativeTaskCompleted } from '../native-task-notifications.ts'
 
 /** Messages requested per history page. */
 export const PAGE_MESSAGES = 50
@@ -674,9 +673,6 @@ export class Session implements SessionFace {
     if (event.type === 'turn/start') this.firstPromptPendingTurn = false
     const queueChanged = this.queueMirror.acceptDurable(event)
     const publication = this.conversation.append({ event, view })
-    if (this.address === undefined && event.type === 'turn/end' && event.data.reason.kind === 'completed') {
-      publishNativeTaskCompleted({ sessionId: this.sessionId, turn: event.data.turn, seq: event.seq })
-    }
     return queueChanged ? 'immediate' : publication
   }
 
