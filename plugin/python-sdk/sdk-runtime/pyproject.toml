@@ -13,7 +13,7 @@ authors = [{ name = "DeepSeek" }]
 
 [project.urls]
 Homepage = "https://github.com/deepseek-ai/deepseek-harness"
-Documentation = "https://github.com/deepseek-ai/deepseek-harness/blob/master/python/sdk-runtime/README.md"
+Documentation = "https://github.com/deepseek-ai/deepseek-harness/blob/master/plugin/python-sdk/sdk-runtime/README.md"
 Issues = "https://github.com/deepseek-ai/deepseek-harness/issues"
 Source = "https://github.com/deepseek-ai/deepseek-harness"
 

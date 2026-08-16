@@ -160,8 +160,8 @@ export const TRANSLATION_SCOPE_GLOB_EXCLUDES = [
   '**/.pytest_cache/**',
   'apps/web/dist/**',
   '.artifacts/**',
-  'python/sdk-runtime/src/deepseek_harness_runtime/runtime/dsh-jsonrpc-agent-*/**',
-  'python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/**',
+  'plugin/python-sdk/sdk-runtime/src/deepseek_harness_runtime/runtime/dsh-jsonrpc-agent-*/**',
+  'plugin/python-sdk/sdk-runtime/src/deepseek_harness_runtime/runtime/node/**',
   'vendor/**',
 ]
 
@@ -172,8 +172,8 @@ function isTranslationSourceExcluded(file: string): boolean {
       || segment.startsWith('.doc-typecheck-')
     || segment.startsWith('.node-next-types-'))
     || file.startsWith('apps/web/dist/')
-    || file.startsWith('python/sdk-runtime/src/deepseek_harness_runtime/runtime/dsh-jsonrpc-agent-')
-    || file.startsWith('python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/')
+    || file.startsWith('plugin/python-sdk/sdk-runtime/src/deepseek_harness_runtime/runtime/dsh-jsonrpc-agent-')
+    || file.startsWith('plugin/python-sdk/sdk-runtime/src/deepseek_harness_runtime/runtime/node/')
 }
 
 /** Whether one discovered Markdown or sidecar path belongs to the bilingual source corpus. */
@@ -183,7 +183,7 @@ export function isTranslationScopeFile(file: string): boolean {
     || ROOT_CONTRIBUTING_ARTIFACT.test(file)
     || file.startsWith('.agents/notes/')
     || file.startsWith('docs/')
-    || file.startsWith('python/'))
+    || file.startsWith('plugin/python-sdk/'))
 }
 
 /** Read the manifest exclusion list or fail before enforcement starts. */

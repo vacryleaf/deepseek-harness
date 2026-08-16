@@ -13,19 +13,19 @@ pnpm install
 pnpm exec tsx scripts/build-exe-for-python-sdk.ts
 ```
 
-Use `--skip-build` when the required `lib/` artifacts already exist, or `--targets=node24-linux-x64,node24-linux-arm64,node24-macos-arm64` to select platforms. Products land in `dist-exe/` and the script syncs the selected carriers into `python/sdk-runtime/`. macOS builds also sync the matching spawn helper required by `node-pty`.
+Use `--skip-build` when the required `lib/` artifacts already exist, or `--targets=node24-linux-x64,node24-linux-arm64,node24-macos-arm64` to select platforms. Products land in `dist-exe/` and the script syncs the selected carriers into `plugin/python-sdk/sdk-runtime/`. macOS builds also sync the matching spawn helper required by `node-pty`.
 
 ## Validate the SDK
 
-Keep the virtual environment outside `python/`, install the test group, and run the Python suite:
+Keep the virtual environment outside `plugin/python-sdk/`, install the test group, and run the Python suite:
 
 ```sh
 export UV_PROJECT_ENVIRONMENT="$PWD/tmp/py-sdk-venv"
-uv sync --project python/sdk --group test
-uv run --project python/sdk pytest
+uv sync --project plugin/python-sdk/sdk --group test
+uv run --project plugin/python-sdk/sdk pytest
 ```
 
-`python/sdk/tests/test_bundled_runtime.py` exercises available bundled carriers and skips a carrier when its artifact has not been built. For repository-wide test policy, see [Testing](../docs/testing.md).
+`plugin/python-sdk/sdk/tests/test_bundled_runtime.py` exercises available bundled carriers and skips a carrier when its artifact has not been built. For repository-wide test policy, see [Testing](../docs/testing.md).
 
 An interactive smoke test needs `DEEPSEEK_API_KEY` in the environment or repository-root `.env`:
 
@@ -43,7 +43,7 @@ Repository contributors can select either development carrier:
 - Set `DSH_RUNTIME_MODE=node` to use the built Node carrier on system Node `>=22.19`. The build script refreshes this carrier, but distributions never include or auto-select it.
 - Set `launch_args_override=("./node_modules/.bin/tsx", "packages/examples/jsonrpc-demo/src/bin.ts")` with the repository root as `cwd` to run unbuilt TypeScript source. Supply `cordis=...` when the default configuration is not suitable.
 
-See `python/sdk/tests/manual_sdk_agent_smoke.py` for a complete source-mode invocation.
+See `plugin/python-sdk/sdk/tests/manual_sdk_agent_smoke.py` for a complete source-mode invocation.
 
 ## Build distributions
 

@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[4]
 SMOKE = runpy.run_path(ROOT / "scripts" / "smoke-python-runtime.py")
 
 

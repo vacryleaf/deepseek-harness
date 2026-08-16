@@ -57,7 +57,7 @@ def run_smoke(repo_root: Path, keep_sessions: bool) -> None:
     try:
         with DeepSeekHarness(
             model="sdk-smoke-model",
-            cwd=str(repo_root / "python/sdk"),
+            cwd=str(repo_root / "plugin/python-sdk/sdk"),
             runtime_cwd=str(repo_root),
             session_root=str(session_root),
             cordis=str(bundled_default_config_path()),
@@ -103,7 +103,7 @@ def main() -> None:
     parser.add_argument(
         "--repo-root",
         type=Path,
-        default=Path(__file__).resolve().parents[3],
+        default=Path(__file__).resolve().parents[4],
         help="Path to the deepseek-harness checkout.",
     )
     parser.add_argument("--keep-sessions", action="store_true")

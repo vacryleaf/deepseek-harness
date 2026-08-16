@@ -15,7 +15,7 @@ from deepseek_harness.errors import TransportClosedError
 from deepseek_harness_runtime import resolve_bundled_launch_args
 
 _MODES = ("exe", "node")
-_REPO_ROOT = Path(__file__).parents[3]
+_REPO_ROOT = Path(__file__).parents[4]
 _MINIMAL_CONFIG = _REPO_ROOT / "examples" / "jsonrpc-agent" / "minimal.cordis.yml"
 
 # The config must include the JSON-RPC serving plugin.

@@ -45,7 +45,7 @@ packages/    @deepseek-ai/dsh-<pkg> workspaces at packages/<group>/<pkg>/
   examples/    demo bundles (agent-spine + CLI/ACP/JSON-RPC bins)
   support/     dev/test infrastructure
   util/        zero-dependency utilities
-python/      Python SDK and bundled runtime (see python/README.md)
+plugin/python-sdk/  Python SDK and bundled runtime (see plugin/python-sdk/README.md)
 native/      @deepseek-ai/node-addon-landlock-run source of record (see native/README.md)
 examples/    Runnable cordis.yml leaves over packages/examples bundles (see examples/AGENTS.md)
 .agents/     Agent workflows and Agent Notes (`notes/`)

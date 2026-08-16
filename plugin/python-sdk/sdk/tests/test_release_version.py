@@ -10,7 +10,7 @@ from types import SimpleNamespace
 import pytest
 
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[4]
 SCRIPT = ROOT / "scripts" / "build-python-release.py"
 build_python_release = SimpleNamespace(**runpy.run_path(str(SCRIPT)))
 
@@ -107,7 +107,7 @@ def test_stage_runtime_copies_platform_payload(
     assert 'license = "MIT"' in pyproject
     assert 'license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]' in pyproject
     assert (destination / "platforms.json").read_bytes() == (
-        ROOT / "python" / "sdk-runtime" / "platforms.json"
+        ROOT / "plugin" / "python-sdk" / "sdk-runtime" / "platforms.json"
     ).read_bytes()
     assert (destination / "LICENSE").read_bytes() == (ROOT / "LICENSE").read_bytes()
     assert (destination / "THIRD_PARTY_NOTICES.md").read_bytes() == (

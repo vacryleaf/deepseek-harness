@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SDK_DISTRIBUTION = "deepseek-harness-sdk"
 RUNTIME_DISTRIBUTION = "deepseek-harness-runtime-bin"
-PLATFORM_MANIFEST = ROOT / "python" / "sdk-runtime" / "platforms.json"
+PLATFORM_MANIFEST = ROOT / "plugin" / "python-sdk" / "sdk-runtime" / "platforms.json"
 
 
 def load_platforms(path: Path = PLATFORM_MANIFEST) -> dict[str, tuple[str, str]]:
@@ -188,7 +188,7 @@ def stage_license_files(destination: Path, *, include_notices: bool) -> None:
 
 
 def stage_sdk(destination: Path, version: str) -> None:
-    copy_package(ROOT / "python" / "sdk", destination)
+    copy_package(ROOT / "plugin" / "python-sdk" / "sdk", destination)
     stage_license_files(destination, include_notices=False)
     pyproject = destination / "pyproject.toml"
     rewrite_version(pyproject, version)
@@ -204,7 +204,7 @@ def stage_sdk(destination: Path, version: str) -> None:
 
 
 def stage_runtime(destination: Path, version: str, executable: Path, executable_name: str) -> None:
-    copy_package(ROOT / "python" / "sdk-runtime", destination)
+    copy_package(ROOT / "plugin" / "python-sdk" / "sdk-runtime", destination)
     stage_license_files(destination, include_notices=True)
     rewrite_version(destination / "pyproject.toml", version)
     runtime_dir = destination / "src" / "deepseek_harness_runtime" / "runtime"

@@ -26,9 +26,9 @@ const { values } = parseArgs({
   args: process.argv.slice(2),
   options: { manifest: { type: 'string' } },
 })
-const runtimeManifestPath = resolve(root, values.manifest ?? 'python/sdk-runtime/package.json')
+const runtimeManifestPath = resolve(root, values.manifest ?? 'plugin/python-sdk/sdk-runtime/package.json')
 const runtimeManifest = await loadManifest(runtimeManifestPath)
-const runtimeName = runtimeManifest.name ?? 'python/sdk-runtime'
+const runtimeName = runtimeManifest.name ?? 'plugin/python-sdk/sdk-runtime'
 const workspace = await loadWorkspacePackages()
 const runtimeDependencies = runtimeManifest.dependencies ?? {}
 const parents = new Map<string, string | undefined>()
@@ -65,7 +65,7 @@ for (let index = 0; index < queue.length; index += 1) {
 }
 
 if (failures.length > 0) {
-  console.error('verify-runtime-closure: required workspace peers are missing from python/sdk-runtime dependencies:')
+  console.error('verify-runtime-closure: required workspace peers are missing from plugin/python-sdk/sdk-runtime dependencies:')
   for (const failure of failures) console.error(`  ${failure}`)
   process.exit(1)
 }

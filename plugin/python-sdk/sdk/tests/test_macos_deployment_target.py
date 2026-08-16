@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[4]
 SCRIPT = ROOT / "scripts" / "check-macos-deployment-target.py"
 checker = SimpleNamespace(**runpy.run_path(str(SCRIPT)))
 

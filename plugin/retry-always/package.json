@@ -1,8 +1,8 @@
 {
-  "name": "dsh-retry-always",
+  "name": "@deepseek-ai/dsh-retry-always",
   "version": "0.1.0",
   "private": true,
-  "description": "Profile bundle enabling unbounded retries for the direct DeepSeek provider.",
+  "description": "Profile bundle for direct DeepSeek and settings-backed Pi AI retry defaults.",
   "type": "module",
   "main": "index.js",
   "files": [

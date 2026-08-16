@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Pre-composed plugin bundles a thin leaf `cordis.yml` loads instead of assembling the spine and an entry point by hand. These are **demo / reference** packages — the `-demo` npm suffix marks each one as non-product surface, readable straight off the package name. The runnable leaves under the repo-root [`examples/`](../../examples/AGENTS.md) and the [Python SDK runtime](../../python/sdk-runtime/README.md) are the consumers; each is just its swappable backends plus one bundle entry.
+Pre-composed plugin bundles a thin leaf `cordis.yml` loads instead of assembling the spine and an entry point by hand. These are **demo / reference** packages — the `-demo` npm suffix marks each one as non-product surface, readable straight off the package name. The runnable leaves under the repo-root [`examples/`](../../examples/AGENTS.md) and the [Python SDK runtime](../../plugin/python-sdk/sdk-runtime/README.md) are the consumers; each is just its swappable backends plus one bundle entry.
 
 | Package | npm name | Role |
 |---|---|---|

@@ -7,7 +7,7 @@ DeepSeek Harness is licensed under [MIT](LICENSE). It depends on the third-party
 
 This file lists **direct** dependencies declared by the workspace and the explicitly disclosed official Claude platform payload closure. It is generated from the workspace manifests by `scripts/gen-third-party-notices.ts`: a pre-commit hook regenerates it whenever a staged file changes one of its inputs, and `scripts/gen-third-party-notices.spec.ts` asserts in the test lane that the committed bytes match. Deleting a manifest runs no hook, so that case is caught by the assertion instead. Run `pnpm run verify-third-party-notices` for the standalone check.
 
-The complete npm transitive closure, including the Landlock launcher workspace, is recorded with exact pinned versions in [`pnpm-lock.yaml`](pnpm-lock.yaml) — inspect it with `pnpm licenses list`. The Python closure is recorded separately in [`python/sdk/uv.lock`](python/sdk/uv.lock).
+The complete npm transitive closure, including the Landlock launcher workspace, is recorded with exact pinned versions in [`pnpm-lock.yaml`](pnpm-lock.yaml) — inspect it with `pnpm licenses list`. The Python closure is recorded separately in [`plugin/python-sdk/sdk/uv.lock`](plugin/python-sdk/sdk/uv.lock).
 
 ## Vendored source (`vendor/`)
 
@@ -170,7 +170,7 @@ External packages **directly declared** only by repository tooling, test infrast
 
 `eslint-plugin-sonarjs` (LGPL-3.0-only) and `lightningcss` (MPL-2.0) run only as development tooling; their code is not linked into or distributed with any DeepSeek Harness artifact.
 
-## Python SDK dependencies (`python/`)
+## Python SDK dependencies (`plugin/python-sdk/`)
 
 Direct dependencies of the `pyproject.toml` manifests, plus `uv` as the development workflow tool.
 

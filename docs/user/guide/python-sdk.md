@@ -24,7 +24,7 @@ python -m venv .venv
 python -m pip install deepseek-harness-sdk
 ```
 
-The installed runtime needs no system Node.js. Repository contributors who need to build the runtime or wheels from source should use the [Python contributor workflows](../../../python/development.md).
+The installed runtime needs no system Node.js. Repository contributors who need to build the runtime or wheels from source should use the [Python contributor workflows](../../../plugin/python-sdk/development.md).
 
 ## Run the checked-in example
 
@@ -101,4 +101,4 @@ The composition omits harness identity, workspace prompt text, skills, one-shot 
 
 The composition uses `danger-full-access`. Run it only inside a disposable checkout or container: Bash and the editor can modify any path allowed to the runtime process. The persistent PTY backend requires a POSIX terminal substrate, so this composition does not support Windows agents.
 
-The [`jsonrpc-agent` example reference](../../../examples/jsonrpc-agent/README.md) owns the exact composition. The [Python SDK reference](../../../python/sdk/README.md) covers lifecycle, results, notifications, runtime selection, and configuration; the [Cordis primer](../../cordis-primer.md) covers composition syntax.
+The [`jsonrpc-agent` example reference](../../../examples/jsonrpc-agent/README.md) owns the exact composition. The [Python SDK reference](../../../plugin/python-sdk/sdk/README.md) covers lifecycle, results, notifications, runtime selection, and configuration; the [Cordis primer](../../cordis-primer.md) covers composition syntax.

@@ -1,13 +1,23 @@
-# Direct DeepSeek retries
+# Retry policies
 
-This bundle enables the existing unbounded retry policy for the direct DeepSeek provider.
+English | [中文](README.zh.md)
 
-It relies on the standard dsh-base profile, which already mounts @deepseek-ai/dsh-llm-retry. The bundle only replaces the llm-deepseek configuration row; it does not implement another retry loop.
+This bundle provides the two retry policy features that can run independently on the master source tree: direct DeepSeek unbounded retries and settings-backed Pi AI defaults.
 
-Install it into a profile with:
+## Direct DeepSeek
+
+The bundle replaces the llm-deepseek configuration row with retryPolicy mode always. It relies on the standard dsh-base profile, which already mounts dsh-llm-retry. It does not implement another retry loop.
+
+## Pi AI defaults
+
+The bundle mounts a settings consumer that reads the llm-pi-ai namespace and adds retryPolicy mode always to every provider profile that does not already declare a policy. It repeats reconciliation when settings change, so providers added from the Models page receive the same default. Existing explicit policies are preserved.
+
+The policy is validated and persisted by the normal settings provider. The existing dsh-llm-retry plugin continues to own backoff, cancellation, session events, and disposal. This avoids the leaf-only defaultRetryPolicy configuration field and works with master.
+
+## Install
+
+Install it into a profile that mounts llm-pi-ai and llm-retry:
 
     dsh plugin --profile <profile> add ./plugin/retry-always
 
-The policy retries until the request succeeds, the session is cancelled, or the owning runtime is disposed. Backoff remains bounded by the provider policy.
-
-The Pi AI dynamic-provider default is intentionally not included. Its defaultRetryPolicy field is an extension in the current source tree rather than a master-compatible provider setting. Android notifications are a native Gradle application, not a Cordis bundle.
+A provider configured only in a static cordis entry must declare its own retryPolicy. Removing the bundle does not remove policies it already persisted; remove those settings explicitly when reverting the behavior.

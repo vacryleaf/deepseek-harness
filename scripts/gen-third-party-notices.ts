@@ -558,10 +558,10 @@ export function collectPythonDependencies(
   })
 }
 
-/** Direct Python dependencies named by the `pyproject.toml` manifests under `python/`. */
+/** Direct Python dependencies named by the `pyproject.toml` manifests under `plugin/python-sdk/`. */
 function collectPython(): { name: string; license: string; repo: string; role: string }[] {
-  const manifests = globSync('python/*/pyproject.toml', { cwd: root })
-  if (manifests.length === 0) throw new Error('gen-third-party-notices: no python/*/pyproject.toml found; the Python tree moved.')
+  const manifests = globSync('plugin/python-sdk/*/pyproject.toml', { cwd: root })
+  if (manifests.length === 0) throw new Error('gen-third-party-notices: no plugin/python-sdk/*/pyproject.toml found; the Python tree moved.')
   return collectPythonDependencies(manifests.map(path => readFileSync(resolve(root, path), 'utf8')))
 }
 
@@ -695,7 +695,7 @@ DeepSeek Harness is licensed under [MIT](LICENSE). It depends on the third-party
 
 This file lists **direct** dependencies declared by the workspace and the explicitly disclosed official Claude platform payload closure. It is generated from the workspace manifests by \`scripts/gen-third-party-notices.ts\`: a pre-commit hook regenerates it whenever a staged file changes one of its inputs, and \`scripts/gen-third-party-notices.spec.ts\` asserts in the test lane that the committed bytes match. Deleting a manifest runs no hook, so that case is caught by the assertion instead. Run \`pnpm run verify-third-party-notices\` for the standalone check.
 
-The complete npm transitive closure, including the Landlock launcher workspace, is recorded with exact pinned versions in [\`pnpm-lock.yaml\`](pnpm-lock.yaml) — inspect it with \`pnpm licenses list\`. The Python closure is recorded separately in [\`python/sdk/uv.lock\`](python/sdk/uv.lock).
+The complete npm transitive closure, including the Landlock launcher workspace, is recorded with exact pinned versions in [\`pnpm-lock.yaml\`](pnpm-lock.yaml) — inspect it with \`pnpm licenses list\`. The Python closure is recorded separately in [\`plugin/python-sdk/sdk/uv.lock\`](plugin/python-sdk/sdk/uv.lock).
 
 ## Vendored source (\`vendor/\`)
 
@@ -722,7 +722,7 @@ External packages **directly declared** only by repository tooling, test infrast
 
 ${renderNpmTable(devDeps)}
 ${renderNonPermissiveNote(nonPermissiveDev)}
-## Python SDK dependencies (\`python/\`)
+## Python SDK dependencies (\`plugin/python-sdk/\`)
 
 Direct dependencies of the \`pyproject.toml\` manifests, plus \`uv\` as the development workflow tool.
 

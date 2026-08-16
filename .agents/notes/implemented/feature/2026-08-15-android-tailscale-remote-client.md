@@ -4,7 +4,7 @@ Status: implemented
 
 English | [中文](2026-08-15-android-tailscale-remote-client.zh.md)
 
-> Scope: the native Android shell in apps/android, its remote-origin policy, and the private-network deployment path for a DSH Web host. This decision does not move DSH execution, credentials, or tool providers onto Android.
+> Scope: the native Android shell in plugin/android-remote, its remote-origin policy, and the private-network deployment path for a DSH Web host. This decision does not move DSH execution, credentials, or tool providers onto Android.
 
 ## Problem
 
@@ -12,7 +12,7 @@ The DSH Web UI needs a phone client for a host that remains responsible for the 
 
 ## Decision
 
-**Android is a native WebView remote client.** apps/android collects and stores multiple validated DSH origins, remembers the last selected origin, and loads the complete remote Web application in a locked-down WebView. The app does not execute Node, Shell, subprocess, filesystem, or LSP code.
+**Android is a native WebView remote client.** plugin/android-remote collects and stores multiple validated DSH origins, remembers the last selected origin, and loads the complete remote Web application in a locked-down WebView. The app does not execute Node, Shell, subprocess, filesystem, or LSP code.
 
 **Tailscale Serve is the deployment path.** DSH remains bound to 127.0.0.1; Tailscale Serve publishes that local listener to the Tailnet over HTTPS. The Android WebView loads the Tailscale HTTPS origin directly, so the page, /api requests, and WebSocket event paths remain same-origin. The DSH host name is added to --trusted-host because the API trust fence evaluates the forwarded authority.
 
@@ -32,6 +32,6 @@ The DSH Web UI needs a phone client for a host that remains responsible for the 
 
 A phone must run Tailscale, belong to the same Tailnet as the DSH host, and be allowed by the Tailnet ACL. The host operator runs dsh web with the Tailscale HTTPS hostname in its trusted-host list and points tailscale serve at the loopback Web port. The Android app can then be built and installed independently of the host runtime.
 
-The WebView persists the service list and last selected origin and provides a native setup screen, service switching, browser navigation, external-link handling, file selection, reconnect behavior, TLS failure handling, and local notifications for completed root turns. Android 13 and newer requires notification permission. While a service is loaded, apps/android starts a low-priority data-sync foreground service that calls session.list, listens to the existing events.mux and events.host downlinks, filters root sessions, reconnects with backoff, and deduplicates completion notifications. The WebView callback remains a fallback for a loaded page. This reduces routine background reclamation but cannot override force-stop, OEM battery policy, or system-level termination, and it is not a replacement for FCM. A future native RPC carrier remains possible, but it must preserve the remote execution boundary and the host-owned capability model.
+The WebView persists the service list and last selected origin and provides a native setup screen, service switching, browser navigation, external-link handling, file selection, reconnect behavior, TLS failure handling, and local notifications for completed root turns. Android 13 and newer requires notification permission. While a service is loaded, plugin/android-remote starts a low-priority data-sync foreground service that calls session.list, listens to the existing events.mux and events.host downlinks, filters root sessions, reconnects with backoff, and deduplicates completion notifications. The WebView callback remains a fallback for a loaded page. This reduces routine background reclamation but cannot override force-stop, OEM battery policy, or system-level termination, and it is not a replacement for FCM. A future native RPC carrier remains possible, but it must preserve the remote execution boundary and the host-owned capability model.
 
-The client module loader derives each plugin revision from a 12-character SHA-1 content hash and appends it as `?rev=...`; local runtime bundle updates therefore require rebuilding and restarting the host artifact server, not a manual revision edit. Publishing a package additionally requires a package-version and lockfile update. The implementation and deployment procedure live in [the Android README](../../../../apps/android/README.md); the transport and trust semantics remain owned by [the WebSocket downlink note](../architecture/2026-08-04-websocket-downlink-carrier.md) and the host webserver package.
+The client module loader derives each plugin revision from a 12-character SHA-1 content hash and appends it as `?rev=...`; local runtime bundle updates therefore require rebuilding and restarting the host artifact server, not a manual revision edit. Publishing a package additionally requires a package-version and lockfile update. The implementation and deployment procedure live in [the Android README](../../../../plugin/android-remote/README.md); the transport and trust semantics remain owned by [the WebSocket downlink note](../architecture/2026-08-04-websocket-downlink-carrier.md) and the host webserver package.

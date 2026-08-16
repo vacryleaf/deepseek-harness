@@ -1,6 +1,9 @@
-# Requires the standard dsh-base profile, which mounts dsh-llm-retry.
+# Requires the standard dsh-base profile, which mounts dsh-llm-retry and llm-pi-ai.
 - id: llm-deepseek
   name: '@deepseek-ai/dsh-llm-deepseek'
   config:
     retryPolicy:
       mode: always
+- insert:
+    - id: pi-ai-retry-always
+      name: '@deepseek-ai/dsh-retry-always'

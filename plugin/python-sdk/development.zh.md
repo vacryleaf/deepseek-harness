@@ -13,19 +13,19 @@ pnpm install
 pnpm exec tsx scripts/build-exe-for-python-sdk.ts
 ```
 
-所需 `lib/` 产物已存在时使用 `--skip-build`；如需选择平台，请使用 `--targets=node24-linux-x64,node24-linux-arm64,node24-macos-arm64`。产物写入 `dist-exe/`，脚本会将所选载体同步到 `python/sdk-runtime/`。macOS 构建还会同步 `node-pty` 所需的配套 spawn 辅助程序。
+所需 `lib/` 产物已存在时使用 `--skip-build`；如需选择平台，请使用 `--targets=node24-linux-x64,node24-linux-arm64,node24-macos-arm64`。产物写入 `dist-exe/`，脚本会将所选载体同步到 `plugin/python-sdk/sdk-runtime/`。macOS 构建还会同步 `node-pty` 所需的配套 spawn 辅助程序。
 
 ## 验证 SDK
 
-请将虚拟环境放在 `python/` 之外，安装测试组，然后运行 Python 测试套件：
+请将虚拟环境放在 `plugin/python-sdk/` 之外，安装测试组，然后运行 Python 测试套件：
 
 ```sh
 export UV_PROJECT_ENVIRONMENT="$PWD/tmp/py-sdk-venv"
-uv sync --project python/sdk --group test
-uv run --project python/sdk pytest
+uv sync --project plugin/python-sdk/sdk --group test
+uv run --project plugin/python-sdk/sdk pytest
 ```
 
-`python/sdk/tests/test_bundled_runtime.py` 会运行可用的内置载体；某个载体的产物尚未构建时，会跳过该载体。仓库级测试政策见 [测试](../docs/testing.md)。
+`plugin/python-sdk/sdk/tests/test_bundled_runtime.py` 会运行可用的内置载体；某个载体的产物尚未构建时，会跳过该载体。仓库级测试政策见 [测试](../docs/testing.md)。
 
 交互式冒烟测试需要环境变量或仓库根目录 `.env` 中存在 `DEEPSEEK_API_KEY`：
 
@@ -43,7 +43,7 @@ with DeepSeekHarness() as harness:
 - 设置 `DSH_RUNTIME_MODE=node`，在系统 Node `>=22.19` 上使用已构建的 Node 载体。构建脚本会刷新该载体，但分发物绝不会包含或自动选择它。
 - 将仓库根目录设为 `cwd`，并设置 `launch_args_override=("./node_modules/.bin/tsx", "packages/examples/jsonrpc-demo/src/bin.ts")`，以运行未构建的 TypeScript 源码。默认配置不合适时，请提供 `cordis=...`。
 
-完整的源码模式调用见 `python/sdk/tests/manual_sdk_agent_smoke.py`。
+完整的源码模式调用见 `plugin/python-sdk/sdk/tests/manual_sdk_agent_smoke.py`。
 
 ## 构建分发包
 

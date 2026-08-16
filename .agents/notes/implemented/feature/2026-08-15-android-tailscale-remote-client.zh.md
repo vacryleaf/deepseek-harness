@@ -4,7 +4,7 @@ Status: implemented
 
 [English](2026-08-15-android-tailscale-remote-client.md) | 中文
 
-> 范围：apps/android 中的原生 Android 壳层、远程 origin 策略，以及 DSH Web 宿主的私有网络部署方式。本决策不把 DSH 执行、凭据或工具提供方移入 Android。
+> 范围：plugin/android-remote 中的原生 Android 壳层、远程 origin 策略，以及 DSH Web 宿主的私有网络部署方式。本决策不把 DSH 执行、凭据或工具提供方移入 Android。
 
 ## 问题
 
@@ -12,7 +12,7 @@ DSH Web UI 需要一个手机客户端，同时由宿主继续负责 Agent、会
 
 ## 决策
 
-**Android 使用原生 WebView 作为远程客户端。** apps/android 收集并保存多个经过校验的 DSH origin，记住上次选择的 origin，并在受限 WebView 中加载完整的远程 Web 应用。该 App 不执行 Node、Shell、子进程、文件系统或 LSP 代码。
+**Android 使用原生 WebView 作为远程客户端。** plugin/android-remote 收集并保存多个经过校验的 DSH origin，记住上次选择的 origin，并在受限 WebView 中加载完整的远程 Web 应用。该 App 不执行 Node、Shell、子进程、文件系统或 LSP 代码。
 
 **使用 Tailscale Serve 部署。** DSH 继续绑定 127.0.0.1；Tailscale Serve 通过 HTTPS 将本地监听器发布到 Tailnet。Android WebView 直接加载 Tailscale HTTPS origin，因此页面、/api 请求和 WebSocket 事件路径保持同源。由于 API 信任栅栏会检查转发后的 authority，需要把 DSH 主机名加入 --trusted-host。
 
@@ -32,6 +32,6 @@ DSH Web UI 需要一个手机客户端，同时由宿主继续负责 Agent、会
 
 手机需要运行 Tailscale，与 DSH 宿主加入同一 Tailnet，并通过 Tailnet ACL 获准访问。宿主运行带有 Tailscale HTTPS 主机名 trusted-host 配置的 dsh web，再将 tailscale serve 指向 loopback Web 端口。Android App 可以独立于宿主运行时构建和安装。
 
-WebView 保存服务列表和上次选择的 origin，并提供原生设置页、切换服务、浏览器返回、外部链接处理、文件选择、重连、TLS 错误处理以及根会话完成后的本地通知。Android 13 及更新版本需要通知权限。服务加载期间，apps/android 启动低优先级 data-sync 前台服务，调用 session.list，监听现有 events.mux 和 events.host 下行流，过滤根会话、带退避重连并去重完成通知。WebView 回调仍是页面加载时的备用通道。这会降低常规后台回收概率，但不能覆盖强制停止、厂商省电策略或系统级终止，也不是 FCM 的替代品。未来仍可增加原生 RPC 载体，但必须保持远程执行边界和宿主拥有的能力模型。
+WebView 保存服务列表和上次选择的 origin，并提供原生设置页、切换服务、浏览器返回、外部链接处理、文件选择、重连、TLS 错误处理以及根会话完成后的本地通知。Android 13 及更新版本需要通知权限。服务加载期间，plugin/android-remote 启动低优先级 data-sync 前台服务，调用 session.list，监听现有 events.mux 和 events.host 下行流，过滤根会话、带退避重连并去重完成通知。WebView 回调仍是页面加载时的备用通道。这会降低常规后台回收概率，但不能覆盖强制停止、厂商省电策略或系统级终止，也不是 FCM 的替代品。未来仍可增加原生 RPC 载体，但必须保持远程执行边界和宿主拥有的能力模型。
 
-客户端模块加载器会从每个插件 bundle 的内容计算 12 位 SHA-1 revision，并将其追加为 `?rev=...`；因此本地 runtime bundle 更新需要重新构建并重启宿主产物服务器，不需要手工修改 revision。发布包时还需要更新包版本和锁文件。实现与部署步骤位于 [Android README](../../../../apps/android/README.md)；传输与信任语义仍由 [WebSocket 下行载体说明](../architecture/2026-08-04-websocket-downlink-carrier.md) 和 webserver 宿主包负责。
+客户端模块加载器会从每个插件 bundle 的内容计算 12 位 SHA-1 revision，并将其追加为 `?rev=...`；因此本地 runtime bundle 更新需要重新构建并重启宿主产物服务器，不需要手工修改 revision。发布包时还需要更新包版本和锁文件。实现与部署步骤位于 [Android README](../../../../plugin/android-remote/README.md)；传输与信任语义仍由 [WebSocket 下行载体说明](../architecture/2026-08-04-websocket-downlink-carrier.md) 和 webserver 宿主包负责。
